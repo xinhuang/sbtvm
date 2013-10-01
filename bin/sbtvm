@@ -1,3 +1,114 @@
 #!/usr/bin/env ruby
 
-puts 'hello sbtvm'
+if ARGV.size == 0
+  puts <<EOF
+Usage: #{$0} <version>
+  
+  Use sbt of specified version.
+
+EOF
+  exit 0
+end
+
+version = ARGV[0]
+ 
+puts "Fetching sbt of version #{version}..."
+
+require 'net/http'
+require 'fileutils'
+
+class Http
+  def self.fetch url
+    http_response = Net::HTTP.get_response(URI.parse(url))
+    if http_response.kind_of? Net::HTTPRedirection
+      redirect_url = http_response['location']
+      Http.fetch(redirect_url).body
+    else
+      http_response.body
+    end
+  end
+end
+
+def downloaded version
+  false
+end
+
+def parse response
+  versions = {}
+  response.scan /<a href="([^\s]+)">([^\s]+)<\/a>/ do |folder, version|
+    version.strip!
+    version.chomp!('/')
+    folder.strip!
+    versions[version] = folder
+  end
+  versions
+end
+
+def download url, dest
+  dir = File.dirname dest
+  FileUtils.mkdir_p dir unless Dir.exists? dir
+  `wget -O "#{dest}" #{url}`
+end
+
+def extract file, dest
+  FileUtils.rm_rf dest
+  FileUtils.mkdir_p dest
+  require 'rubygems/package'
+  require 'zlib'
+  tar = Gem::Package::TarReader.new Zlib::GzipReader.open file
+  tar.rewind
+  tar.each do |entry|
+    name = entry.full_name
+    name = name.sub /^sbt\//, ""
+    next if name.size == 0
+    
+    path = "#{dest}/#{name}"
+    if entry.directory?
+      FileUtils.mkdir path
+    elsif entry.file?
+      File.open path, "w" do |file|
+        file.write entry.read
+      end
+    end
+  end
+end
+
+def windows?
+  (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+end
+
+def create_link file
+  # TODO:
+end
+
+def get_sbt_path version_base
+  if windows?
+    "#{version_base}/bin/sbt.bat"
+  else
+    "#{version_base}/bin/sbt"
+  end
+end
+
+sbtvm_base = File.expand_path "~/.sbtvm"
+temp = "#{sbtvm_base}/temp"
+
+# TODO: check sbt #{version} if already exists
+unless downloaded version
+  sbt_repo = 'http://repo.scala-sbt.org/scalasbt/sbt-native-packages/org/scala-sbt/sbt/'
+
+  # parse http response of sbt repo
+  versions = parse(Http.fetch(sbt_repo))
+
+  url = sbt_repo + versions[version] + "sbt.tgz"
+  temp_file = "#{temp}/sbt.zip"
+  download url, temp_file
+
+  version_base = "#{sbtvm_base}/sbts/#{version}/" 
+  extract temp_file, version_base
+
+  sbt_path = get_sbt_path version_base
+  FileUtils.rm_rf temp
+end
+
+create_link sbt_path
+
