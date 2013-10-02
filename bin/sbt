@@ -1,3 +1,3 @@
 #!/usr/bin/env ruby
 
-exec "/home/patz/.sbtvm/sbts/0.13.0//bin/sbt"
+exec 'sbtvm 0.13.0'

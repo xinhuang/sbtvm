@@ -84,13 +84,13 @@ def windows?
   (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
 
-def create_link(link_folder, file)
+def refresh_sbt_link(link_folder, file)
   FileUtils.mkdir_p(link_folder) unless Dir.exists?(link_folder)
 
   stub = "#{link_folder}/sbt"
   p stub
   File.open(stub, 'w+') do |f|
-    f.write("exec \"#{file}\"")
+    f.write("exec \"#{file} \#{ARGV.join(" ")}\"\n")
   end
   FileUtils.chmod("a+x", stub)
 
@@ -105,22 +105,21 @@ def get_sbt_path(version_base)
 end
 
 
+version_base = "#{sbtvm_base}/sbts/#{version}/" 
+sbt_path = get_sbt_path(version_base)
 unless downloaded version
   sbt_repo = 'http://repo.scala-sbt.org/scalasbt/sbt-native-packages/org/scala-sbt/sbt/'
 
-  # parse http response of sbt repo
   versions = parse(Http.fetch(sbt_repo))
 
   url = sbt_repo + versions[version] + "sbt.tgz"
   temp_file = "#{temp}/sbt.zip"
   download(url, temp_file)
 
-  version_base = "#{sbtvm_base}/sbts/#{version}/" 
   extract(temp_file, version_base)
 
-  sbt_path = get_sbt_path(version_base)
   FileUtils.rm_rf(temp)
 end
 
-create_link(File.dirname(__FILE__), sbt_path)
+refresh_sbt_link(File.dirname(__FILE__), sbt_path)
 
