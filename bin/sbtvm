@@ -11,8 +11,6 @@ EOF
 end
 
 version = ARGV[0]
- 
-puts "Fetching sbt of version #{version}..."
 
 require 'net/http'
 require 'fileutils'
