@@ -69,6 +69,7 @@ def extract file, dest
       File.open path, "w" do |file|
         file.write entry.read
       end
+      FileUtils.chmod("a+x", path) if (File.basename path) == 'sbt'
     end
   end
 end
@@ -77,18 +78,16 @@ def windows?
   (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
 
-def create_link file
-  sbt_sh = "#{File.dirname(__FILE__)}/sbt"
-  File.open sbt_sh, 'w+' do |f|
-    f.write file
-  end
-  FileUtils.chmod "a+x", sbt_sh
+def create_link link_folder, file
+  FileUtils.mkdir_p link_folder unless Dir.exists? link_folder
 
-  sbt_bat = "#{File.dirname(__FILE__)}/sbt.bat"
-  File.open sbt_bat, 'w+' do |f|
-    f.write "\"#{file}\""
+  stub = "#{link_folder}/sbt"
+  p stub
+  File.open stub, 'w+' do |f|
+    f.write "exec \"#{file}\""
   end
-  FileUtils.chmod "a+x", sbt_bat
+  FileUtils.chmod "a+x", stub
+
 end
 
 def get_sbt_path version_base
@@ -120,5 +119,5 @@ unless downloaded version
   FileUtils.rm_rf temp
 end
 
-create_link sbt_path
+create_link File.dirname(__FILE__), sbt_path
 
