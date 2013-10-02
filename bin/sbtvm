@@ -88,7 +88,6 @@ def refresh_sbt_link(link_folder, file)
   FileUtils.mkdir_p(link_folder) unless Dir.exists?(link_folder)
 
   stub = "#{link_folder}/sbt"
-  p stub
   File.open(stub, 'w+') do |f|
     f.write("exec \"#{file} \#{ARGV.join(" ")}\"\n")
   end
