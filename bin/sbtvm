@@ -78,7 +78,17 @@ def windows?
 end
 
 def create_link file
-  # TODO:
+  sbt_sh = "#{File.dirname(__FILE__)}/sbt"
+  File.open sbt_sh, 'w+' do |f|
+    f.write file
+  end
+  FileUtils.chmod "a+x", sbt_sh
+
+  sbt_bat = "#{File.dirname(__FILE__)}/sbt.bat"
+  File.open sbt_bat, 'w+' do |f|
+    f.write "\"#{file}\""
+  end
+  FileUtils.chmod "a+x", sbt_bat
 end
 
 def get_sbt_path version_base

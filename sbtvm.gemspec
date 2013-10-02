@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = 'sbtvm manages sbt version for you.'
   s.authors     = ['Xin Huang']
   s.email       = 'patz.hwang@gmail.com'
-  s.executables = ['sbtvm']
+  s.executables = ['sbtvm', 'sbt', 'sbt.bat']
   s.files       = ['bin/sbtvm', 'README.md']
   s.homepage    = 'https://github.com/xinhuang/sbtvm'
   s.license     = 'WTFPL'
