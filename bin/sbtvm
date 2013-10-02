@@ -18,9 +18,9 @@ require 'net/http'
 require 'fileutils'
 
 class Http
-  def self.fetch url
+  def self.fetch(url)
     http_response = Net::HTTP.get_response(URI.parse(url))
-    if http_response.kind_of? Net::HTTPRedirection
+    if http_response.kind_of?(Net::HTTPRedirection)
       redirect_url = http_response['location']
       Http.fetch(redirect_url).body
     else
@@ -29,13 +29,22 @@ class Http
   end
 end
 
-def downloaded version
+def sbtvm_base
+  File.expand_path("~/.sbtvm")
+end
+
+def temp 
+  "#{sbtvm_base}/temp"
+end
+
+def downloaded(version)
+  # TODO: check sbt #{version} if already exists
   false
 end
 
 def parse response
   versions = {}
-  response.scan /<a href="([^\s]+)">([^\s]+)<\/a>/ do |folder, version|
+  response.scan(/<a href="([^\s]+)">([^\s]+)<\/a>/) do |folder, version|
     version.strip!
     version.chomp!('/')
     folder.strip!
@@ -44,30 +53,30 @@ def parse response
   versions
 end
 
-def download url, dest
-  dir = File.dirname dest
-  FileUtils.mkdir_p dir unless Dir.exists? dir
+def download(url, dest)
+  dir = File.dirname(dest)
+  FileUtils.mkdir_p(dir) unless Dir.exists?(dir)
   `wget -O "#{dest}" #{url}`
 end
 
-def extract file, dest
-  FileUtils.rm_rf dest
-  FileUtils.mkdir_p dest
+def extract(file, dest)
+  FileUtils.rm_rf(dest)
+  FileUtils.mkdir_p(dest)
   require 'rubygems/package'
   require 'zlib'
-  tar = Gem::Package::TarReader.new Zlib::GzipReader.open file
+  tar = Gem::Package::TarReader.new(Zlib::GzipReader.open(file))
   tar.rewind
   tar.each do |entry|
     name = entry.full_name
-    name = name.sub /^sbt\//, ""
+    name = name.sub(/^sbt\//, "")
     next if name.size == 0
     
     path = "#{dest}/#{name}"
     if entry.directory?
-      FileUtils.mkdir path
+      FileUtils.mkdir(path)
     elsif entry.file?
-      File.open path, "w" do |file|
-        file.write entry.read
+      File.open(path, "w") do |file|
+        file.write(entry.read)
       end
       FileUtils.chmod("a+x", path) if (File.basename path) == 'sbt'
     end
@@ -78,19 +87,19 @@ def windows?
   (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
 
-def create_link link_folder, file
-  FileUtils.mkdir_p link_folder unless Dir.exists? link_folder
+def create_link(link_folder, file)
+  FileUtils.mkdir_p(link_folder) unless Dir.exists?(link_folder)
 
   stub = "#{link_folder}/sbt"
   p stub
-  File.open stub, 'w+' do |f|
-    f.write "exec \"#{file}\""
+  File.open(stub, 'w+') do |f|
+    f.write("exec \"#{file}\"")
   end
-  FileUtils.chmod "a+x", stub
+  FileUtils.chmod("a+x", stub)
 
 end
 
-def get_sbt_path version_base
+def get_sbt_path(version_base)
   if windows?
     "#{version_base}/bin/sbt.bat"
   else
@@ -98,10 +107,7 @@ def get_sbt_path version_base
   end
 end
 
-sbtvm_base = File.expand_path "~/.sbtvm"
-temp = "#{sbtvm_base}/temp"
 
-# TODO: check sbt #{version} if already exists
 unless downloaded version
   sbt_repo = 'http://repo.scala-sbt.org/scalasbt/sbt-native-packages/org/scala-sbt/sbt/'
 
@@ -110,14 +116,14 @@ unless downloaded version
 
   url = sbt_repo + versions[version] + "sbt.tgz"
   temp_file = "#{temp}/sbt.zip"
-  download url, temp_file
+  download(url, temp_file)
 
   version_base = "#{sbtvm_base}/sbts/#{version}/" 
-  extract temp_file, version_base
+  extract(temp_file, version_base)
 
-  sbt_path = get_sbt_path version_base
-  FileUtils.rm_rf temp
+  sbt_path = get_sbt_path(version_base)
+  FileUtils.rm_rf(temp)
 end
 
-create_link File.dirname(__FILE__), sbt_path
+create_link(File.dirname(__FILE__), sbt_path)
 
