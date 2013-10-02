@@ -38,8 +38,7 @@ def temp
 end
 
 def downloaded(version)
-  # TODO: check sbt #{version} if already exists
-  false
+  return Dir.exists?("#{sbtvm_base}/sbts/#{version}")
 end
 
 def parse response
