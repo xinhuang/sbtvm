@@ -10,6 +10,10 @@
 ## TODO
 
 * quoted arguments can be passed to sbt
+* prompt for .sbtvm path
+* warning if .sbtvm path contains spaces
+* force clean
+* cache versions
 
 ## License
 
