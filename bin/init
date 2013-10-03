@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+`sbtvm 0.13.0`
+exec('sbt')

@@ -1,3 +1,3 @@
 #!/usr/bin/env ruby
 
-exec 'sbtvm 0.13.0'
+exec("ruby #{File.dirname(__FILE__)}/init")
