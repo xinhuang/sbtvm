@@ -74,7 +74,7 @@ def extract(file, dest)
     if entry.directory?
       FileUtils.mkdir(path)
     elsif entry.file?
-      File.open(path, "w") do |file|
+      File.open(path, "wb") do |file|
         file.write(entry.read)
       end
       FileUtils.chmod("a+x", path) if (File.basename path) == 'sbt'
