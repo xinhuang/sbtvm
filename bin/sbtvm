@@ -53,7 +53,9 @@ end
 def download(url, dest)
   dir = File.dirname(dest)
   FileUtils.mkdir_p(dir) unless Dir.exists?(dir)
-  `wget -O "#{dest}" #{url}`
+  File.open(dest, "wb+") { |file| 
+    file.write(Http.fetch(url))
+  }
 end
 
 def extract(file, dest)
@@ -112,7 +114,7 @@ unless downloaded version
   versions = parse(Http.fetch(sbt_repo))
 
   url = sbt_repo + versions[version] + "sbt.tgz"
-  temp_file = "#{temp}/sbt.zip"
+  temp_file = "#{temp}/sbt.tgz"
   download(url, temp_file)
 
   extract(temp_file, version_base)
