@@ -5,7 +5,7 @@
     > sbtvm 0.13.0
     > sbt sbt-version
     ...
-    [Info] versio 0.13.0
+    [Info] version 0.13.0
 
 ## TODO
 
@@ -14,7 +14,7 @@
 * warning if .sbtvm path contains spaces
 * force clean
 * cache versions
-* `latest` will lastest version
+* `latest` will fetch lastest version
 
 ## License
 
