@@ -14,6 +14,7 @@
 * warning if .sbtvm path contains spaces
 * force clean
 * cache versions
+* `latest` will lastest version
 
 ## License
 
